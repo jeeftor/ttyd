@@ -1,0 +1,57 @@
+name: sync upstream ttyd
+
+on:
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+      - id: upstream
+        name: Fetch official ttyd
+        run: |
+          git remote add upstream https://github.com/tsl0922/ttyd.git
+          git fetch --no-tags upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo 'Official ttyd is already included in main.'
+            echo 'needs_sync=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'needs_sync=true' >> "$GITHUB_OUTPUT"
+      - name: Create or update the sync branch
+        if: steps.upstream.outputs.needs_sync == 'true'
+        run: |
+          if git ls-remote --exit-code --heads origin automation/upstream-sync; then
+            git fetch --no-tags origin automation/upstream-sync
+            git switch -C automation/upstream-sync origin/automation/upstream-sync
+            git merge --no-edit origin/main
+          else
+            git switch -c automation/upstream-sync
+          fi
+          git merge --no-edit upstream/main
+          git push origin HEAD:automation/upstream-sync
+      - name: Open a pull request when needed
+        if: steps.upstream.outputs.needs_sync == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh pr list --base main --head automation/upstream-sync --state open --json number --jq 'length' | grep -qx '0'; then
+            gh pr create \
+              --base main \
+              --head automation/upstream-sync \
+              --title 'chore: sync upstream ttyd' \
+              --body 'Automated merge from https://github.com/tsl0922/ttyd. Review the upstream changes and CI before merging.'
+          fi

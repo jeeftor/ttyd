@@ -34,6 +34,8 @@ jobs:
       - name: Create or update the sync branch
         if: steps.upstream.outputs.needs_sync == 'true'
         run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if git ls-remote --exit-code --heads origin automation/upstream-sync; then
             git fetch --no-tags origin automation/upstream-sync
             git switch -C automation/upstream-sync origin/automation/upstream-sync

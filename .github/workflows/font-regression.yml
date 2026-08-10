@@ -1,0 +1,34 @@
+name: font regression
+
+on:
+  push:
+    paths:
+    - ".github/workflows/font-regression.yml"
+    - "html/**"
+    - "src/html.h"
+  pull_request:
+    paths:
+    - ".github/workflows/font-regression.yml"
+    - "html/**"
+    - "src/html.h"
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 18
+      - name: Build the frontend
+        run: |
+          corepack enable
+          yarn install --immutable
+          yarn run build
+        working-directory: html
+      - name: Verify the embedded Nerd Font
+        run: |
+          npm install --no-save --prefix .playwright playwright@1.55.0
+          .playwright/node_modules/.bin/playwright install --with-deps chromium
+          NODE_PATH="$PWD/.playwright/node_modules" node test/font-check.js
+        working-directory: html

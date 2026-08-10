@@ -1,15 +1,14 @@
-![backend](https://github.com/tsl0922/ttyd/workflows/backend/badge.svg)
-![frontend](https://github.com/tsl0922/ttyd/workflows/frontend/badge.svg)
-[![GitHub Releases](https://img.shields.io/github/downloads/tsl0922/ttyd/total)](https://github.com/tsl0922/ttyd/releases)
-[![Docker Pulls](https://img.shields.io/docker/pulls/tsl0922/ttyd)](https://hub.docker.com/r/tsl0922/ttyd)
+[![backend](https://github.com/jeeftor/ttyd/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/jeeftor/ttyd/actions/workflows/backend.yml)
+[![frontend](https://github.com/jeeftor/ttyd/actions/workflows/frontend.yml/badge.svg?branch=main)](https://github.com/jeeftor/ttyd/actions/workflows/frontend.yml)
+[![GitHub Releases](https://img.shields.io/github/downloads/jeeftor/ttyd/total)](https://github.com/jeeftor/ttyd/releases)
 [![Packaging status](https://repology.org/badge/tiny-repos/ttyd.svg)](https://repology.org/project/ttyd/versions)
-![GitHub](https://img.shields.io/github/license/tsl0922/ttyd)
+[![GitHub](https://img.shields.io/github/license/jeeftor/ttyd)](LICENSE)
 
-# ttyd - Share your terminal over the web
+# ttyd - Share your terminal over the web with Nerd Font support
 
 ttyd is a simple command-line tool for sharing terminal over the web.
 
-![screenshot](https://github.com/tsl0922/ttyd/raw/main/screenshot.gif)
+![screenshot](https://github.com/jeeftor/ttyd/raw/main/screenshot.gif)
 
 # Features
 
@@ -36,11 +35,11 @@ ttyd is a simple command-line tool for sharing terminal over the web.
 - Install on OpenWrt: `opkg install ttyd`
 - Install on Gentoo: clone the [repo](https://bitbucket.org/mgpagano/ttyd/src/master) and follow the directions [here](https://wiki.gentoo.org/wiki/Custom_repository#Creating_a_local_repository).
 - Install with [Homebrew](https://docs.brew.sh/Homebrew-on-Linux) : `brew install ttyd`
-- Precompiled static binaries: download from the [releases](https://github.com/tsl0922/ttyd/releases) page
+- Precompiled static binaries with Nerd Font support: download from this fork's [releases](https://github.com/jeeftor/ttyd/releases) page
 
 ## Install on Windows
 
-- Binary version (recommended): download from the [releases](https://github.com/tsl0922/ttyd/releases) page
+- Binary version with Nerd Font support: download from this fork's [releases](https://github.com/jeeftor/ttyd/releases) page
 - Install with [WinGet](https://github.com/microsoft/winget-cli): `winget install tsl0922.ttyd`
 - Install with [Scoop](https://scoop.sh/#/apps?q=ttyd&s=2&d=1&o=true): `scoop install ttyd`
 - [Compile on Windows](https://github.com/tsl0922/ttyd/wiki/Compile-on-Windows)
@@ -101,6 +100,17 @@ avoid incorrect character widths on first render.
 
 The web font originated in the
 [metorm/ttyd-nerd-font](https://github.com/metorm/ttyd-nerd-font) fork.
+See [LICENSES/JetBrainsMono-OFL-1.1.txt](LICENSES/JetBrainsMono-OFL-1.1.txt)
+for its license.
+
+## Container image
+
+GitHub Actions publishes the current main branch to
+`ghcr.io/jeeftor/ttyd:latest` and `ghcr.io/jeeftor/ttyd:alpine`.
+
+```bash
+docker run --rm -it -p 7681:7681 ghcr.io/jeeftor/ttyd:latest bash
+```
 
 ## Alternatives
 

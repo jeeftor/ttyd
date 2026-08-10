@@ -11,6 +11,7 @@ BUILD_ROOT="${BUILD_ROOT:-/opt/build}"
 BUILD_TARGET="${BUILD_TARGET:-x86_64}"
 
 ZLIB_VERSION="${ZLIB_VERSION:-1.3.2}"
+ZLIB_SHA256="${ZLIB_SHA256:-bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16}"
 JSON_C_VERSION="${JSON_C_VERSION:-0.18}"
 OPENSSL_VERSION="${OPENSSL_VERSION:-3.6.1}"
 LIBUV_VERSION="${LIBUV_VERSION:-1.52.1}"
@@ -18,7 +19,12 @@ LIBWEBSOCKETS_VERSION="${LIBWEBSOCKETS_VERSION:-4.5.7}"
 
 build_zlib() {
     echo "=== Building zlib-${ZLIB_VERSION} (${TARGET})..."
-    curl -fSsLo- "https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz" | tar xz -C "${BUILD_DIR}"
+    zlib_archive="${BUILD_DIR}/zlib-${ZLIB_VERSION}.tar.gz"
+    curl --fail --location --retry 3 --retry-all-errors --silent --show-error \
+        --output "${zlib_archive}" \
+        "https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz"
+    echo "${ZLIB_SHA256}  ${zlib_archive}" | sha256sum --check --status
+    tar xzf "${zlib_archive}" -C "${BUILD_DIR}"
     pushd "${BUILD_DIR}"/zlib-"${ZLIB_VERSION}"
         env CHOST="${TARGET}" ./configure --static --archs="-fPIC" --prefix="${STAGE_DIR}" --disable-crcvx
         make -j"$(nproc)" install

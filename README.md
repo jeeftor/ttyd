@@ -91,6 +91,17 @@ Read the example usage on the [wiki](https://github.com/tsl0922/ttyd/wiki/Exampl
 
 Modern browsers, See [Browser Support](https://github.com/xtermjs/xterm.js#browser-support).
 
+## Nerd Font support
+
+This fork bundles a Nerd-patched JetBrains Mono web font, so symbols work in
+Safari and other browsers without installing a local font or a userscript. It
+is the default terminal font; override it with `-t fontFamily=...` when you
+prefer another font. The font is loaded before the terminal is refitted to
+avoid incorrect character widths on first render.
+
+The web font originated in the
+[metorm/ttyd-nerd-font](https://github.com/metorm/ttyd-nerd-font) fork.
+
 ## Alternatives
 
 * [Wetty](https://github.com/krishnasrinivas/wetty): [Node](https://nodejs.org) based web terminal (SSH/login)

@@ -4,11 +4,15 @@ on:
   push:
     paths:
     - ".github/workflows/frontend.yml"
-    - "html/*"
+    - ".github/workflows/sync-html.yml"
+    - "html/**"
+    - "src/html.h"
   pull_request:
     paths:
     - ".github/workflows/frontend.yml"
-    - "html/*"
+    - ".github/workflows/sync-html.yml"
+    - "html/**"
+    - "src/html.h"
 
 jobs:
   build:
@@ -18,11 +22,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 18
-      - name: Run yarn install, check and build
+      - name: Build and verify the bundled frontend
         run: |
           corepack enable
-          corepack prepare yarn@stable --activate
-          yarn install
+          yarn install --immutable
           yarn run check
           yarn run build
+          git diff --exit-code -- ../src/html.h
         working-directory: html

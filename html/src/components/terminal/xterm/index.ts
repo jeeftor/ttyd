@@ -167,6 +167,10 @@ export class Xterm {
 
         terminal.open(parent);
         fitAddon.fit();
+        void document.fonts.load(`normal ${terminal.options.fontSize}px "TTYD Nerd Font"`).then(() => {
+            fitAddon.fit();
+            terminal.refresh(0, terminal.rows - 1);
+        });
     }
 
     @bind

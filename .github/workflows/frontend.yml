@@ -7,12 +7,14 @@ on:
     - ".github/workflows/sync-html.yml"
     - "html/**"
     - "src/html.h"
+    - "test/font-check.js"
   pull_request:
     paths:
     - ".github/workflows/frontend.yml"
     - ".github/workflows/sync-html.yml"
     - "html/**"
     - "src/html.h"
+    - "test/font-check.js"
 
 jobs:
   build:

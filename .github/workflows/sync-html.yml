@@ -5,6 +5,7 @@ on:
     paths:
     - ".github/workflows/sync-html.yml"
     - "html/**"
+    - "test/font-check.js"
 
 permissions:
   contents: write

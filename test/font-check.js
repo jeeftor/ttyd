@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const http = require('http');
 const path = require('path');
-const { chromium } = require('playwright');
+const {chromium} = require('playwright');
 
 const distDir = path.resolve(process.cwd(), 'dist');
 
@@ -54,7 +54,9 @@ async function checkFont() {
 
         if (!result.loaded) throw new Error('TTYD Nerd Font did not load');
         if (Math.abs(result.nerdWidth - result.monospaceWidth) > 0.01) {
-            throw new Error(`Nerd Font glyph width ${result.nerdWidth} differs from monospace width ${result.monospaceWidth}`);
+            throw new Error(
+                `Nerd Font glyph width ${result.nerdWidth} differs from monospace width ${result.monospaceWidth}`
+            );
         }
     } finally {
         await browser.close();

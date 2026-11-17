@@ -1,5 +1,5 @@
-[![backend](https://github.com/jeeftor/ttyd/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/jeeftor/ttyd/actions/workflows/backend.yml)
-[![frontend](https://github.com/jeeftor/ttyd/actions/workflows/frontend.yml/badge.svg?branch=main)](https://github.com/jeeftor/ttyd/actions/workflows/frontend.yml)
+[![backend](https://github.com/jeeftor/ttyd/actions/workflows/backend.yml/badge.svg?branch=master)](https://github.com/jeeftor/ttyd/actions/workflows/backend.yml)
+[![frontend](https://github.com/jeeftor/ttyd/actions/workflows/frontend.yml/badge.svg?branch=master)](https://github.com/jeeftor/ttyd/actions/workflows/frontend.yml)
 [![GitHub Releases](https://img.shields.io/github/downloads/jeeftor/ttyd/total)](https://github.com/jeeftor/ttyd/releases)
 [![Packaging status](https://repology.org/badge/tiny-repos/ttyd.svg)](https://repology.org/project/ttyd/versions)
 [![GitHub](https://img.shields.io/github/license/jeeftor/ttyd)](LICENSE)
@@ -8,7 +8,7 @@
 
 ttyd is a simple command-line tool for sharing terminal over the web.
 
-![screenshot](https://github.com/jeeftor/ttyd/raw/main/screenshot.gif)
+![screenshot](https://github.com/jeeftor/ttyd/raw/master/screenshot.gif)
 
 # Features
 
@@ -105,7 +105,7 @@ for its license.
 
 ## Container image
 
-GitHub Actions publishes the current main branch to
+GitHub Actions publishes the current master branch to
 `ghcr.io/jeeftor/ttyd:latest` and `ghcr.io/jeeftor/ttyd:alpine`.
 
 ```bash

@@ -19,14 +19,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: main
+          ref: master
       - id: upstream
         name: Fetch official ttyd
         run: |
           git remote add upstream https://github.com/tsl0922/ttyd.git
           git fetch --no-tags upstream main
           if git merge-base --is-ancestor upstream/main HEAD; then
-            echo 'Official ttyd is already included in main.'
+            echo 'Official ttyd is already included in master.'
             echo 'needs_sync=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -39,7 +39,7 @@ jobs:
           if git ls-remote --exit-code --heads origin automation/upstream-sync; then
             git fetch --no-tags origin automation/upstream-sync
             git switch -C automation/upstream-sync origin/automation/upstream-sync
-            git merge --no-edit origin/main
+            git merge --no-edit origin/master
           else
             git switch -c automation/upstream-sync
           fi
@@ -50,9 +50,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh pr list --base main --head automation/upstream-sync --state open --json number --jq 'length' | grep -qx '0'; then
+          if gh pr list --base master --head automation/upstream-sync --state open --json number --jq 'length' | grep -qx '0'; then
             gh pr create \
-              --base main \
+              --base master \
               --head automation/upstream-sync \
               --title 'chore: sync upstream ttyd' \
               --body 'Automated merge from https://github.com/tsl0922/ttyd. Review the upstream changes and CI before merging.'

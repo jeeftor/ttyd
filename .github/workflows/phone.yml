@@ -1,0 +1,68 @@
+name: phone workspace
+on:
+  push:
+    paths: ["src/**", "html/**", "CMakeLists.txt", "test/phone-*.js", ".github/workflows/phone.yml"]
+  pull_request:
+    paths: ["src/**", "html/**", "CMakeLists.txt", "test/phone-*.js", ".github/workflows/phone.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  phone:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 18
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libwebsockets-dev libwebsockets-evlib-uv libjson-c-dev libuv1-dev libssl-dev zlib1g-dev tmux
+      - name: Build both frontends
+        working-directory: html
+        run: |
+          corepack enable
+          yarn install --immutable
+          yarn check
+          yarn build
+          TTYP=1 yarn build
+      - name: Build both binaries
+        run: |
+          cmake -S . -B build-phone -DBUILD_TTYP=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-phone --parallel 4
+      - name: Install browser test tools
+        run: |
+          npm install --prefix /tmp/ttyp-browser --no-save playwright@1.58.2 ws@8
+          /tmp/ttyp-browser/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Verify tmux and browser behavior
+        env:
+          NODE_PATH: /tmp/ttyp-browser/node_modules
+        run: |
+          node test/phone-check.js
+          node test/phone-browser.js
+          BROWSER=webkit node test/phone-browser.js
+          cd html && node ../test/font-check.js
+      - name: Package candidate
+        run: |
+          mkdir -p candidate
+          cp build-phone/ttyp candidate/ttyp.${{ matrix.arch }}
+          cp PHONE.md candidate/
+          cd candidate && sha256sum ttyp.* > SHA256SUMS
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ttyp-linux-${{ matrix.arch }}
+          path: candidate/
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ttyp-browser-${{ matrix.arch }}
+          path: output/playwright/

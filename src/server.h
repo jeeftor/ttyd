@@ -37,6 +37,7 @@ struct pss_http {
 };
 
 struct pss_tty {
+  void *phone;
   bool initialized;
   int initial_cmd_index;
   bool authenticated;

@@ -30,6 +30,7 @@ const genHeader = (size, buf, len) => {
     data += `unsigned int index_html_size = ${size};\n`;
     return data;
 };
+const buildDir = process.env.TTYP ? 'dist-phone' : 'dist';
 let fileSize = 0;
 
 task('clean', () => {
@@ -41,13 +42,13 @@ task('inline', () => {
         compress: false,
     };
 
-    return src('dist/index.html').pipe(inlineSource(options)).pipe(rename('inline.html')).pipe(dest('dist/'));
+    return src(`${buildDir}/index.html`).pipe(inlineSource(options)).pipe(rename('inline.html')).pipe(dest(buildDir));
 });
 
 task(
     'default',
     series('inline', () => {
-        return src('dist/inline.html')
+        return src(`${buildDir}/inline.html`)
             .pipe(
                 through2.obj((file, enc, cb) => {
                     fileSize = file.contents.length;
@@ -62,7 +63,7 @@ task(
                     return cb(null, file);
                 })
             )
-            .pipe(rename('html.h'))
+            .pipe(rename(process.env.TTYP ? 'phone_html.h' : 'html.h'))
             .pipe(dest('../src/'));
     })
 );

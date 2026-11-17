@@ -116,3 +116,9 @@ docker run --rm -it -p 7681:7681 ghcr.io/jeeftor/ttyd:latest bash
 
 * [Wetty](https://github.com/krishnasrinivas/wetty): [Node](https://nodejs.org) based web terminal (SSH/login)
 * [GoTTY](https://github.com/yudai/gotty): [Go](https://golang.org) based web terminal
+
+## Phone workspace (ttyp)
+
+The optional `ttyp` binary provides a phone-first browser interface with tmux
+window tabs, terminal keys, a prompt composer, and a read/copy view. See
+[PHONE.md](PHONE.md) for building, running, and iPhone acceptance checks.

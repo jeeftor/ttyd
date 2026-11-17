@@ -13,6 +13,9 @@
 
 #include "utils.h"
 #include "compat.h"
+#ifdef TTYP
+#include "phone.h"
+#endif
 
 #ifndef TTYD_VERSION
 #define TTYD_VERSION "unknown"
@@ -53,6 +56,10 @@ static lws_retry_bo_t retry = {
 
 // command line options
 static const struct option options[] = {{"port", required_argument, NULL, 'p'},
+#ifdef TTYP
+                                        {"tmux-socket", required_argument, NULL, 1001},
+                                        {"tmux-session", required_argument, NULL, 1002},
+#endif
                                         {"interface", required_argument, NULL, 'i'},
                                         {"socket-owner", required_argument, NULL, 'U'},
                                         {"credential", required_argument, NULL, 'c'},
@@ -88,6 +95,29 @@ static const struct option options[] = {{"port", required_argument, NULL, 'p'},
 static const char *opt_string = "p:i:U:c:H:u:g:s:w:I:b:P:f:6aSC:K:A:Wt:T:Om:oqBd:vh";
 
 static void print_help() {
+#ifdef TTYP
+  fprintf(stderr,
+          "ttyp: phone-first tmux workspace\n\nUsage: ttyp [options]\n\n"
+          "  --tmux-socket NAME    Dedicated tmux socket (default: ttyp)\n"
+          "  --tmux-session NAME   Mirrored workspace session (default: phone)\n"
+          "  -p, --port PORT       Listen port (default: 7682)\n"
+          "  -i, --interface ADDR  Bind interface/address (default: all interfaces)\n"
+          "  -w, --cwd PATH        Starting directory for new shells\n"
+          "  -c, --credential USER:PASS  Basic authentication\n"
+          "  -H, --auth-header NAME      Authentication proxy header\n"
+          "  -b, --base-path PATH   Reverse-proxy base path\n"
+          "  -S, --ssl             Enable TLS\n"
+          "  -C, --ssl-cert PATH    TLS certificate\n"
+          "  -K, --ssl-key PATH     TLS key\n"
+          "  -A, --ssl-ca PATH      Client certificate authority\n"
+          "  -m, --max-clients N    Maximum websocket connections (two per browser)\n"
+          "  -d, --debug LEVEL     Logging level\n"
+          "  -v, --version         Show version\n"
+          "  -h, --help            Show help\n\n"
+          "Writing and same-origin checks are enabled. Run as your normal account.\n"
+          "Shells persist in tmux after you disconnect. See PHONE.md for deployment.\n");
+  return;
+#endif
   // clang-format off
   fprintf(stderr, "ttyd is a tool for sharing terminal over the web\n\n"
           "USAGE:\n"
@@ -139,7 +169,7 @@ static void print_help() {
 
 static void print_config() {
   lwsl_notice("tty configuration:\n");
-  if (server->credential != NULL) lwsl_notice("  credential: %s\n", server->credential);
+  if (server->credential != NULL) lwsl_notice("  basic authentication: configured\n");
   lwsl_notice("  start command: %s\n", server->command);
   lwsl_notice("  close signal: %s (%d)\n", server->sig_name, server->sig_code);
   lwsl_notice("  terminal type: %s\n", server->terminal_type);
@@ -314,11 +344,25 @@ int main(int argc, char **argv) {
 #endif
 
   int start = calc_command_start(argc, argv);
+#ifdef TTYP
+  if (start != argc) {
+    fprintf(stderr, "ttyp opens shells through tmux; do not supply a command\n");
+    return 1;
+  }
+  char *phone_argv[] = {"tmux", "attach-session", NULL};
+  server = server_new(2, phone_argv, 0);
+  server->writable = true;
+  server->check_origin = true;
+#else
   server = server_new(argc, argv, start);
+#endif
 
   struct lws_context_creation_info info;
   memset(&info, 0, sizeof(info));
   info.port = 7681;
+#ifdef TTYP
+  info.port = 7682;
+#endif
   info.iface = NULL;
   info.protocols = protocols;
   info.gid = -1;
@@ -349,11 +393,23 @@ int main(int argc, char **argv) {
   int c;
   while ((c = getopt_long(start, argv, opt_string, options, NULL)) != -1) {
     switch (c) {
+#ifdef TTYP
+      case 1001:
+        phone_socket = optarg;
+        break;
+      case 1002:
+        phone_session = optarg;
+        break;
+#endif
       case 'h':
         print_help();
         return 0;
       case 'v':
+#ifdef TTYP
+        printf("ttyp version %s\n", TTYD_VERSION);
+#else
         printf("ttyd version %s\n", TTYD_VERSION);
+#endif
         return 0;
       case 'd':
         debug_level = parse_int("debug", optarg);
@@ -532,6 +588,13 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+#ifdef TTYP
+  if (info.uid != -1 || info.gid != -1) {
+    fprintf(stderr, "ttyp: run as the intended account instead of using --uid/--gid\n");
+    return 1;
+  }
+  if (phone_setup() != 0) return 1;
+#endif
   lws_set_log_level(debug_level, NULL);
 
   char server_hdr[128] = "";
@@ -629,6 +692,9 @@ int main(int argc, char **argv) {
 
   lws_context_destroy(context);
 
+#ifdef TTYP
+  phone_shutdown();
+#endif
   // cleanup
   server_free(server);
 

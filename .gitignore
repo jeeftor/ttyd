@@ -52,3 +52,10 @@ build
 
 # Project files
 !init.d
+
+# Phone build artifacts
+/build-phone/
+/src/phone_html.h
+
+/node_modules/.cache/
+/output/playwright/

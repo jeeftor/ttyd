@@ -2,7 +2,11 @@
 #include <string.h>
 #include <zlib.h>
 
+#ifdef TTYP
+#include "phone_html.h"
+#else
 #include "html.h"
+#endif
 #include "server.h"
 #include "utils.h"
 

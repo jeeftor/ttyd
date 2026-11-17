@@ -10,6 +10,9 @@
 #include "server.h"
 #include "utils.h"
 #include "compat.h"
+#ifdef TTYP
+#include "phone.h"
+#endif
 
 // initial message list
 static char initial_cmds[] = {SET_WINDOW_TITLE, SET_PREFERENCES};
@@ -255,6 +258,9 @@ int callback_tty(struct lws *wsi, enum lws_callback_reasons reason, void *user, 
       break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
+#ifdef TTYP
+      if (pss->phone) return phone_write(pss);
+#endif
       if (!pss->initialized) {
         if (pss->initial_cmd_index == sizeof(initial_cmds)) {
           pss->initialized = true;
@@ -285,6 +291,9 @@ int callback_tty(struct lws *wsi, enum lws_callback_reasons reason, void *user, 
       break;
 
     case LWS_CALLBACK_RECEIVE:
+#ifdef TTYP
+      if (len + pss->len > 262144) return -1;
+#endif
       if (pss->buffer == NULL) {
         pss->buffer = xmalloc(len);
         pss->len = len;
@@ -308,6 +317,15 @@ int callback_tty(struct lws *wsi, enum lws_callback_reasons reason, void *user, 
         return 0;
       }
 
+#ifdef TTYP
+      if (pss->phone) {
+        phone_request(pss, pss->buffer, pss->len);
+        free(pss->buffer);
+        pss->buffer = NULL;
+        pss->len = 0;
+        break;
+      }
+#endif
       switch (command) {
         case INPUT:
           if (!server->writable) break;
@@ -341,7 +359,7 @@ int callback_tty(struct lws *wsi, enum lws_callback_reasons reason, void *user, 
               if (token != NULL && !strcmp(token, server->credential))
                 pss->authenticated = true;
               else
-                lwsl_warn("WS authentication failed with token: %s\n", token);
+                lwsl_warn("WS authentication failed\n");
             }
             if (!pss->authenticated) {
               json_object_put(obj);
@@ -349,6 +367,14 @@ int callback_tty(struct lws *wsi, enum lws_callback_reasons reason, void *user, 
               return -1;
             }
           }
+#ifdef TTYP
+          struct json_object *manage;
+          if (obj && json_object_object_get_ex(obj, "manage", &manage) && json_object_get_boolean(manage)) {
+            phone_open(pss);
+            json_object_put(obj);
+            break;
+          }
+#endif
           json_object_put(obj);
           if (!spawn_process(pss, columns, rows)) return 1;
           break;
@@ -366,6 +392,9 @@ int callback_tty(struct lws *wsi, enum lws_callback_reasons reason, void *user, 
     case LWS_CALLBACK_CLOSED:
       if (pss->wsi == NULL) break;
 
+#ifdef TTYP
+      phone_close(pss);
+#endif
       server->client_count--;
       lwsl_notice("WS closed from %s, clients: %d\n", pss->address, server->client_count);
       if (pss->buffer != NULL) free(pss->buffer);

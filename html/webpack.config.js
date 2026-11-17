@@ -12,10 +12,10 @@ const devMode = process.env.NODE_ENV !== 'production';
 const baseConfig = {
     context: path.resolve(__dirname, 'src'),
     entry: {
-        app: './index.tsx',
+        app: process.env.TTYP ? './phone.ts' : './index.tsx',
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, process.env.TTYP ? 'dist-phone' : 'dist'),
         filename: devMode ? '[name].js' : '[name].[contenthash].js',
     },
     module: {
@@ -52,11 +52,12 @@ const baseConfig = {
         }),
         new HtmlWebpackPlugin({
             inject: false,
+            phone: Boolean(process.env.TTYP),
             minify: {
                 removeComments: true,
                 collapseWhitespace: true,
             },
-            title: 'ttyd - Terminal',
+            title: process.env.TTYP ? 'ttyp' : 'ttyd - Terminal',
             template: './template.html',
         }),
     ],

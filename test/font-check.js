@@ -33,7 +33,7 @@ server.listen(0, '127.0.0.1');
 async function checkFont() {
     await new Promise(resolve => server.once('listening', resolve));
     const {port} = server.address();
-    const browser = await chromium.launch();
+    const browser = await chromium.launch({executablePath: process.env.CHROME_HEADLESS_SHELL});
 
     try {
         const page = await browser.newPage();
